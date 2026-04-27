@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Import from config
 import sys
 sys.path.append(str(Path(__file__).parent.parent))
-from config import UPLOAD_DIR, ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE, PREVIEW_ROWS
+from core.config import UPLOAD_DIR, ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE, PREVIEW_ROWS
 
 
 class FileHandler:
@@ -180,7 +180,7 @@ class FileHandler:
         statistics = {
             "total_rows": len(df),
             "total_columns": len(df.columns),
-            "column_types": df.dtypes.to_dict(),
+            "column_types": df.dtypes.astype(str).to_dict(),
             "missing_values": df.isnull().sum().to_dict(),
             "numeric_columns": df.select_dtypes(include=[np.number]).columns.tolist(),
             "categorical_columns": df.select_dtypes(include=["object"]).columns.tolist(),

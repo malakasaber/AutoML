@@ -48,12 +48,15 @@ class TargetColumnRequest(BaseModel):
     """Request to get available target columns"""
     file_id: str = Field(..., description="File identifier")
 
+class TargetColumnSuggestion(BaseModel):
+    column: str
+    type: str
+    unique_values: int
 
 class TargetColumnResponse(BaseModel):
-    """Response with target column suggestions"""
-    file_id: str = Field(..., description="File identifier")
-    suggestions: List[Dict[str, str]] = Field(..., description="List of {column, type} objects")
-    message: str = Field(..., description="Information message")
+    file_id: str
+    suggestions: List[TargetColumnSuggestion]
+    message: str
 
 
 class TrainingRequest(BaseModel):
