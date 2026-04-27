@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Dict, Any, Optional
 from enum import Enum
 
@@ -9,6 +9,8 @@ class MLTaskType(str, Enum):
     REGRESSION = "regression"
     CLUSTERING = "clustering"
 
+class BaseSchema(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
 
 class FileUploadResponse(BaseModel):
     """Response after file upload"""
@@ -58,7 +60,20 @@ class TargetColumnResponse(BaseModel):
     suggestions: List[TargetColumnSuggestion]
     message: str
 
+class TrainRequest(BaseSchema):
+    file_id: str
+    task_type: MLTaskType
+    target_column: Optional[str] = None
 
+
+class TrainResponse(BaseSchema):
+    file_id: str
+    model_id: str
+    model_name: str
+    report: Dict[str, Any]
+    message: str
+
+'''
 class TrainingRequest(BaseModel):
     """Request to start model training"""
     file_id: str = Field(..., description="File identifier")
@@ -72,12 +87,22 @@ class TrainingResponse(BaseModel):
     task_type: MLTaskType = Field(..., description="ML task type")
     metrics: Dict[str, Any] = Field(..., description="Performance metrics")
     message: str = Field(..., description="Success message")
-
+'''
 
 class ModelDownloadRequest(BaseModel):
     """Request to download trained model"""
     model_id: str = Field(..., description="Model identifier")
 
+class PredictRequest(BaseSchema):
+    model_id: str
+    data: List[Dict[str, Any]]
+
+class PredictResponse(BaseSchema):
+    model_id: str
+    task_type: str
+    predictions: List[Any]
+    probabilities: Optional[List[List[float]]] = None
+    message: str
 
 class ErrorResponse(BaseModel):
     """Error response"""

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import CORS_ORIGINS
-from app.routes import upload, data_validation, health, file_preview, target_column
+from app.routes import upload, data_validation, health, file_preview, target_column, download_model, predict, train, all_saved_models, delete_model
 
 app = FastAPI(
     title="ML Auto-Pipeline API",
@@ -22,3 +22,8 @@ app.include_router(data_validation.router, tags=["Data Validation"])
 app.include_router(health.router, tags=["Health"])
 app.include_router(file_preview.router, tags=["Data Preview"])
 app.include_router(target_column.router, tags=["Target Column"])
+app.include_router(download_model.router, tags=["Model Download"])
+app.include_router(predict.router, tags=["Prediction"])
+app.include_router(train.router, tags=["Training"])
+app.include_router(all_saved_models.router, tags=["Saved Models List"])
+app.include_router(delete_model.router, tags=["Delete Saved Model"])
