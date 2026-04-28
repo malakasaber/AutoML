@@ -52,6 +52,7 @@ export default function TrainButton({
             algorithms,
           },
           bestAlgorithm: bestModel,
+          visualizations: report.visualizations || {},
         };
 
         onTrainingComplete(trainingResponse.model_id, metricsData);

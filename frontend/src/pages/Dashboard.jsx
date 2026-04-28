@@ -134,7 +134,11 @@ export default function Dashboard({
         {/* Step 5: Results */}
         {appState.metrics && (
           <div className="grid gap-6">
-            <MetricsDisplay metrics={appState.metrics.metrics} taskType={appState.taskType} />
+            <MetricsDisplay
+              metrics={appState.metrics.metrics}
+              visualizations={appState.metrics.visualizations}
+              taskType={appState.taskType}
+            />
 
             <ModelDownload
               modelId={appState.modelId}
