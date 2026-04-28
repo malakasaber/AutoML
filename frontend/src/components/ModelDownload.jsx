@@ -41,7 +41,7 @@ export default function ModelDownload({ modelId, onModelSaved }) {
 
   return (
     <div className="card">
-      <h2 className="card-title">💾 Save Model</h2>
+      <h2 className="card-title">Save Model</h2>
 
       {error && (
         <div className="alert alert-danger">
@@ -108,7 +108,7 @@ export default function ModelDownload({ modelId, onModelSaved }) {
             Downloading...
           </>
         ) : (
-          `📥 Download as ${selectedFormat === 'joblib' ? '.joblib' : '.pkl'}`
+          `Download as ${selectedFormat === 'joblib' ? '.joblib' : '.pkl'}`
         )}
       </button>
 

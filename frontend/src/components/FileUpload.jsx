@@ -12,7 +12,7 @@ export default function FileUpload({ onFileUpload }) {
     const isValidType = validTypes.includes(file.type) || file.name.endsWith('.csv') || file.name.endsWith('.xlsx');
 
     if (!isValidType) {
-      alert('Please upload a CSV or XLSX file');
+      alert('Please upload a CSV or XLSX file or XLS file.');
       return;
     }
 
@@ -79,7 +79,7 @@ export default function FileUpload({ onFileUpload }) {
           {isLoading ? 'Uploading...' : 'Drag and drop your file here'}
         </div>
         <div className="file-upload-subtext">
-          or click to browse (CSV, XLSX)
+          or click to browse (CSV, XLSX, XLS)
         </div>
 
         {fileName && (
@@ -93,12 +93,12 @@ export default function FileUpload({ onFileUpload }) {
         ref={fileInputRef}
         type="file"
         onChange={handleInputChange}
-        accept=".csv,.xlsx"
+        accept=".csv,.xlsx,.xls"
         disabled={isLoading}
       />
 
       <p className="text-muted" style={{ marginTop: '12px' }}>
-        Supported formats: CSV (.csv), Excel (.xlsx)
+        Supported formats: CSV (.csv), Excel (.xlsx), Excel 97-2003 (.xls)
       </p>
     </div>
   );

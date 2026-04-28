@@ -67,7 +67,7 @@ export default function TrainButton({
 
   return (
     <div className="card">
-      <h2 className="card-title">🚀 Train Model</h2>
+      <h2 className="card-title">Train Model</h2>
 
       {validationError && (
         <div className="alert alert-danger">
@@ -88,10 +88,10 @@ export default function TrainButton({
       )}
 
       <div style={{ marginBottom: '12px', fontSize: '14px', color: '#6b7280' }}>
-        {!fileId && <p>⚠️ Upload a dataset to start training</p>}
-        {fileId && !taskType && <p>⚠️ Select a task type (Classification, Regression, or Clustering)</p>}
+        {!fileId && <p>Upload a dataset to start training</p>}
+        {fileId && !taskType && <p>Select a task type (Classification, Regression, or Clustering)</p>}
         {fileId && taskType && taskType !== 'clustering' && !targetColumn && (
-          <p>⚠️ Select a target column for {taskType}</p>
+          <p>Select a target column for {taskType}</p>
         )}
         {fileId && taskType && (taskType === 'clustering' || targetColumn) && (
           <p>✓ Ready to train</p>
@@ -110,7 +110,7 @@ export default function TrainButton({
             Training in progress...
           </>
         ) : (
-          '🎯 Start Training'
+          'Start Training'
         )}
       </button>
 

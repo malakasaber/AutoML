@@ -47,6 +47,7 @@ env/
 uploads/
 data/
 storage/
+models/
 
 # =========================
 # OS files

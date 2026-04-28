@@ -6,15 +6,16 @@ export default function Home({ onFileUpload }) {
     <div className="app-container">
       <div className="page-header">
         <div className="container">
-          <h1>🤖 Machine Learning Pipeline</h1>
+          <h1>Machine Learning Pipeline</h1>
           <p>Upload your dataset and train powerful ML models with automated preprocessing and hyperparameter tuning</p>
         </div>
       </div>
 
       <div className="container">
-        <div className="grid" style={{ maxWidth: '600px' }}>
+        <div className="grid" style={{ width: '100%', padding: '0 20px' }}>
           <FileUpload onFileUpload={onFileUpload} />
 
+          {/*
           <div className="card" style={{ backgroundColor: '#f0f9ff', borderColor: '#93c5fd' }}>
             <h2 className="card-title">📋 How it works</h2>
             <ol style={{ paddingLeft: '20px', margin: 0, fontSize: '14px', lineHeight: '1.8' }}>
@@ -49,6 +50,8 @@ export default function Home({ onFileUpload }) {
               <li>Handles imbalanced data</li>
             </ul>
           </div>
+          */}
+
         </div>
       </div>
     </div>

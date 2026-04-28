@@ -33,7 +33,7 @@ export default function TargetSelector({ fileId, taskType, selectedTarget, onTar
 
   return (
     <div className="card">
-      <h2 className="card-title">🎯 Select Target Column</h2>
+      <h2 className="card-title">Select Target Column</h2>
 
       {error && (
         <div className="alert alert-danger">

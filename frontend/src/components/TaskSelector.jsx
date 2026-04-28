@@ -25,7 +25,7 @@ export default function TaskSelector({ selectedTask, onTaskSelect, disabled }) {
 
   return (
     <div className="card">
-      <h2 className="card-title">🎯 Select Task Type</h2>
+      <h2 className="card-title">Select Task Type</h2>
 
       <div className="grid grid-3">
         {tasks.map(task => (

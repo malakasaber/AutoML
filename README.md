@@ -1,10 +1,10 @@
-# 🚀 AutoML Full Stack Project
+# AutoML Full Stack Project
 
 A full-stack AutoML system using **FastAPI (Backend)** and **React + Vite (Frontend)** for end-to-end machine learning automation.
 
 ---
 
-# 📁 Backend Structure (FastAPI)
+# Backend Structure (FastAPI)
 
 ```
 
@@ -40,7 +40,7 @@ backend/
 
 ---
 
-# 🎨 Frontend Structure (React + Vite)
+# Frontend Structure (React + Vite)
 
 ```
 
@@ -74,7 +74,7 @@ frontend/
 
 ---
 
-# 🔌 Backend API Endpoints
+# Backend API Endpoints
 
 - `POST /api/upload` → Upload dataset
 - `GET /api/preview/{file_id}` → Preview dataset
@@ -89,7 +89,7 @@ frontend/
 
 ---
 
-# ⚙️ Installation & Run
+# Installation & Run
 
 ## 1. Clone repository
 ```bash
@@ -155,7 +155,7 @@ http://localhost:5173
 
 ---
 
-# 📌 Notes
+# Notes
 
 * Make sure backend is running before using frontend
 * CORS is enabled for local development

@@ -47,7 +47,7 @@ export default function Dashboard({
         <div className="container">
           <div className="flex-between" style={{ marginBottom: '16px' }}>
             <div>
-              <h1>🎯 ML Training Dashboard</h1>
+              <h1>ML Training Dashboard</h1>
               <p>Dataset: <strong>{appState.fileName}</strong></p>
             </div>
             <button className="btn btn-secondary" onClick={onReset}>

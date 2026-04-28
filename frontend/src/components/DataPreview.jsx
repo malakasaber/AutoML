@@ -27,7 +27,7 @@ export default function DataPreview({ fileId }) {
   if (isLoading) {
     return (
       <div className="card">
-        <h2 className="card-title">👁️ Data Preview</h2>
+        <h2 className="card-title">Data Preview</h2>
         <div className="flex-center" style={{ padding: '32px' }}>
           <span className="loading">
             <span className="spinner"></span>
@@ -41,7 +41,7 @@ export default function DataPreview({ fileId }) {
   if (error) {
     return (
       <div className="card">
-        <h2 className="card-title">👁️ Data Preview</h2>
+        <h2 className="card-title">Data Preview</h2>
         <div className="alert alert-danger">
           Failed to load preview: {error}
         </div>
@@ -52,7 +52,7 @@ export default function DataPreview({ fileId }) {
   if (!previewData || previewData.length === 0) {
     return (
       <div className="card">
-        <h2 className="card-title">👁️ Data Preview</h2>
+        <h2 className="card-title">Data Preview</h2>
         <div className="text-center text-muted">
           No data available
         </div>
@@ -62,7 +62,7 @@ export default function DataPreview({ fileId }) {
 
   return (
     <div className="card">
-      <h2 className="card-title">👁️ Data Preview</h2>
+      <h2 className="card-title">Data Preview</h2>
 
       <div className="table-wrapper">
         <table>
