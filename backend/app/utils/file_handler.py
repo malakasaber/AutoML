@@ -2,9 +2,11 @@ import os
 import uuid
 from pathlib import Path
 from typing import Tuple, List, Dict, Any
+import math
 import pandas as pd
 import numpy as np
 from fastapi import UploadFile, HTTPException
+from fastapi.encoders import jsonable_encoder
 import logging
 
 logger = logging.getLogger(__name__)
@@ -159,6 +161,28 @@ class FileHandler:
         }
     
     @staticmethod
+    def _sanitize_json_value(value: Any) -> Any:
+        if isinstance(value, dict):
+            return {k: FileHandler._sanitize_json_value(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [FileHandler._sanitize_json_value(v) for v in value]
+        if value is None:
+            return None
+        if pd.isna(value):
+            return None
+        if isinstance(value, (np.integer,)):
+            return int(value)
+        if isinstance(value, (np.floating, float)):
+            if math.isfinite(value):
+                return float(value)
+            return None
+        if isinstance(value, (np.bool_, bool)):
+            return bool(value)
+        if isinstance(value, (pd.Timestamp, pd.Timedelta, np.datetime64, np.timedelta64)):
+            return str(value)
+        return value
+    
+    @staticmethod
     def get_preview(file_id: str, n_rows: int = PREVIEW_ROWS) -> Dict[str, Any]:
         """
         Get preview of dataset
@@ -172,9 +196,12 @@ class FileHandler:
         """
         df = FileHandler.load_dataframe(file_id)
         
-        # Get preview rows
+        # Get preview rows and sanitize JSON-incompatible values
         preview_df = df.head(n_rows)
+        preview_df = preview_df.replace([np.inf, -np.inf], None)
+        preview_df = preview_df.where(pd.notnull(preview_df), None)
         preview_data = preview_df.to_dict(orient="records")
+        preview_data = FileHandler._sanitize_json_value(preview_data)
         
         # Calculate basic statistics
         statistics = {
@@ -185,11 +212,12 @@ class FileHandler:
             "numeric_columns": df.select_dtypes(include=[np.number]).columns.tolist(),
             "categorical_columns": df.select_dtypes(include=["object"]).columns.tolist(),
         }
+        statistics = FileHandler._sanitize_json_value(statistics)
         
         return {
             "file_id": file_id,
             "preview_rows": len(preview_data),
-            "columns": list(df.columns),
+            "columns": [str(col) for col in df.columns],
             "data": preview_data,
             "statistics": statistics,
         }

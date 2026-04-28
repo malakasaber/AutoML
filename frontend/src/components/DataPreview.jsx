@@ -3,8 +3,9 @@ import { useUpload } from '../hooks/useUpload';
 
 export default function DataPreview({ fileId }) {
   const { previewFile, isLoading, error } = useUpload();
-  const [previewData, setPreviewData] = useState(null);
+  const [previewData, setPreviewData] = useState([]);
   const [columns, setColumns] = useState([]);
+  const [totalRows, setTotalRows] = useState(null);
 
   useEffect(() => {
     if (fileId) {
@@ -16,9 +17,8 @@ export default function DataPreview({ fileId }) {
     try {
       const response = await previewFile(fileId);
       setPreviewData(response.data || []);
-      if (response.data && response.data.length > 0) {
-        setColumns(Object.keys(response.data[0]));
-      }
+      setColumns(response.columns || (response.data && response.data.length > 0 ? Object.keys(response.data[0]) : []));
+      setTotalRows(response.statistics?.total_rows ?? null);
     } catch (err) {
       console.error('Failed to load preview:', err);
     }
@@ -68,7 +68,7 @@ export default function DataPreview({ fileId }) {
         <table>
           <thead>
             <tr>
-              {columns.slice(0, 8).map(col => (
+              {columns.map(col => (
                 <th key={col}>{col}</th>
               ))}
             </tr>
@@ -76,7 +76,7 @@ export default function DataPreview({ fileId }) {
           <tbody>
             {previewData.slice(0, 5).map((row, idx) => (
               <tr key={idx}>
-                {columns.slice(0, 8).map(col => (
+                {columns.map(col => (
                   <td key={`${idx}-${col}`}>
                     {typeof row[col] === 'number'
                       ? row[col].toFixed(2)
@@ -90,8 +90,10 @@ export default function DataPreview({ fileId }) {
       </div>
 
       <p className="text-muted" style={{ marginTop: '12px' }}>
-        Showing {Math.min(5, previewData.length)} of {previewData.length} rows,
-        {columns.length > 8 ? ` showing first 8 of ${columns.length} columns` : ' all columns'}
+        Data shape: {totalRows ?? previewData.length} rows × {columns.length} columns
+      </p>
+      <p className="text-muted" style={{ marginTop: '4px' }}>
+        Showing {Math.min(5, previewData.length)} rows of the preview
       </p>
     </div>
   );

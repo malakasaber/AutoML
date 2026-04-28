@@ -28,7 +28,8 @@ class ModelTrainer:
     def split_data(
         self,
         X: pd.DataFrame,
-        y: pd.Series
+        y: pd.Series,
+        stratify: bool = False
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
         """
         Split data into training and testing sets.
@@ -36,6 +37,7 @@ class ModelTrainer:
         Args:
             X: Feature dataframe
             y: Target series
+            stratify: Whether to stratify the split by y.
             
         Returns:
             Tuple of (X_train, X_test, y_train, y_test)
@@ -44,11 +46,15 @@ class ModelTrainer:
         if isinstance(y, np.ndarray):
             y = pd.Series(y)
         
+        stratify_target = None
+        if stratify and isinstance(y, pd.Series) and len(y.unique()) > 1:
+            stratify_target = y
+        
         X_train, X_test, y_train, y_test = train_test_split(
             X, y,
             test_size=self.test_size,
             random_state=self.random_state,
-            stratify=y if isinstance(y, pd.Series) and y is not None and len(y.unique()) > 1 else None
+            stratify=stratify_target
         )
         
         self.X_train = X_train
@@ -255,8 +261,8 @@ class ModelTrainer:
         if len(X) != len(y):
             raise ValueError(f"X and y have different lengths: {len(X)} vs {len(y)}")
         
-        # Split data
-        X_train, X_test, y_train, y_test = self.split_data(X, y)
+        # Split data with stratification for classification
+        X_train, X_test, y_train, y_test = self.split_data(X, y, stratify=True)
         
         # Train models
         trained_models, cv_scores = self.train_classification_models(X_train, y_train)
@@ -302,7 +308,7 @@ class ModelTrainer:
             raise ValueError(f"X and y have different lengths: {len(X)} vs {len(y)}")
         
         # Split data
-        X_train, X_test, y_train, y_test = self.split_data(X, y)
+        X_train, X_test, y_train, y_test = self.split_data(X, y, stratify=False)
         
         # Train models
         trained_models, cv_scores = self.train_regression_models(X_train, y_train)
