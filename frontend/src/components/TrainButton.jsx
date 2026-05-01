@@ -38,10 +38,19 @@ export default function TrainButton({
         const report = trainingResponse.report || {};
         const reportMetrics = report.metrics || {};
         const bestModel = report.best_model || trainingResponse.model_name || report.model_name || '';
-        const algorithms = (report.all_models_cv_scores && Object.entries(report.all_models_cv_scores).map(([name, score]) => ({
+
+        const algorithmsFromCvScores = report.all_models_cv_scores && Object.entries(report.all_models_cv_scores).map(([name, score]) => ({
           name,
           score,
-        }))) || [];
+        }));
+
+        const algorithmsFromComparison = report.model_comparison && Object.entries(report.model_comparison).map(([name, info]) => ({
+          name,
+          score: info.silhouette_score,
+          linkage: info.linkage,
+        }));
+
+        const algorithms = algorithmsFromCvScores || algorithmsFromComparison || [];
 
         const metricsData = {
           model_id: trainingResponse.model_id,

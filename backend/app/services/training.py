@@ -4,7 +4,8 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor
 from sklearn.svm import SVC, SVR
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering
+from sklearn.metrics import silhouette_score
 from sklearn.metrics import mean_squared_error
 from typing import Tuple, Dict, Any, List
 import logging
@@ -150,30 +151,73 @@ class ModelTrainer:
     def train_clustering_models(
         self,
         X: pd.DataFrame,
-        n_clusters: int = None
+        n_clusters: int = None,
+        linkage: str = 'ward'
     ) -> Dict[str, Any]:
         """
-        Train clustering model.
+        Train multiple clustering models (KMeans and Agglomerative).
         
         Args:
             X: Feature dataframe
             n_clusters: Number of clusters (auto-detect if None)
+            linkage: Linkage criterion for Agglomerative ('ward', 'complete', 'average', 'single')
             
         Returns:
-            Dict with trained model
+            Dict with trained models and metadata
         """
         # Auto-detect optimal number of clusters using elbow method
         if n_clusters is None:
             n_clusters = self._optimal_clusters(X)
         
-        kmeans = KMeans(n_clusters=n_clusters, random_state=self.random_state, n_init=10)
-        kmeans.fit(X)
+        models = {}
         
-        logger.info(f"KMeans clustering with {n_clusters} clusters trained")
+        # ============ KMeans ============
+        kmeans = KMeans(
+            n_clusters=n_clusters, 
+            random_state=self.random_state, 
+            n_init=10
+        )
+        kmeans.fit(X)
+        kmeans_silhouette = silhouette_score(X, kmeans.labels_)
+        
+        logger.info(f"KMeans clustering with {n_clusters} clusters trained "
+                    f"(Silhouette Score: {kmeans_silhouette:.4f})")
+        
+        models['KMeans'] = {
+            'model': kmeans,
+            'labels': kmeans.labels_,
+            'silhouette_score': kmeans_silhouette,
+            'inertia': kmeans.inertia_,
+        }
+        
+        # ============ Agglomerative Clustering ============
+        agglomerative = AgglomerativeClustering(
+            n_clusters=n_clusters,
+            linkage=linkage
+        )
+        agg_labels = agglomerative.fit_predict(X)
+        agg_silhouette = silhouette_score(X, agg_labels)
+        
+        logger.info(f"Agglomerative clustering with {n_clusters} clusters trained "
+                    f"(Linkage: {linkage}, Silhouette Score: {agg_silhouette:.4f})")
+        
+        models['Agglomerative'] = {
+            'model': agglomerative,
+            'labels': agg_labels,
+            'silhouette_score': agg_silhouette,
+            'linkage': linkage,
+        }
+        
+        # ============ Summary ============
+        logger.info(f"Clustering Summary:\n"
+                    f"  KMeans Silhouette: {kmeans_silhouette:.4f}\n"
+                    f"  Agglomerative Silhouette: {agg_silhouette:.4f}\n"
+                    f"  Best Model: {max(models.items(), key=lambda x: x[1]['silhouette_score'])[0]}")
         
         return {
-            'KMeans': kmeans,
+            'models': models,
             'n_clusters': n_clusters,
+            'best_model': max(models.items(), key=lambda x: x[1]['silhouette_score'])[0],
         }
     
     def _optimal_clusters(self, X: pd.DataFrame, max_k: int = 10) -> int:
@@ -333,7 +377,8 @@ class ModelTrainer:
     def train_clustering(
         self,
         X: pd.DataFrame,
-        n_clusters: int = None
+        n_clusters: int = None,
+        linkage: str = 'ward'
     ) -> Tuple[Any, Dict[str, Any]]:
         """
         Complete clustering training pipeline.
@@ -341,6 +386,7 @@ class ModelTrainer:
         Args:
             X: Features
             n_clusters: Number of clusters (auto-detect if None)
+            linkage: Linkage criterion for Agglomerative ('ward', 'complete', 'average', 'single')
             
         Returns:
             Tuple of (best_model, training_info)
@@ -349,15 +395,33 @@ class ModelTrainer:
         if X is None or len(X) == 0:
             raise ValueError("X is empty or None")
         
-        clustering_info = self.train_clustering_models(X, n_clusters)
-        best_model = clustering_info['KMeans']
+        # Train all clustering models
+        clustering_info = self.train_clustering_models(X, n_clusters, linkage)
+        
+        # Get the best model dynamically
+        best_model_name = clustering_info['best_model']
+        best_model_obj = clustering_info['models'][best_model_name]['model']
+        best_model_labels = clustering_info['models'][best_model_name]['labels']
+        best_model_silhouette = clustering_info['models'][best_model_name]['silhouette_score']
+        
+        logger.info(f"Best clustering model selected: {best_model_name} "
+                    f"(Silhouette Score: {best_model_silhouette:.4f})")
         
         training_info = {
-            'best_model': best_model,
-            'best_model_name': 'KMeans',
+            'best_model': best_model_obj,
+            'best_model_name': best_model_name,
             'n_clusters': clustering_info['n_clusters'],
             'X': X,
-            'labels': best_model.labels_,
+            'labels': best_model_labels,
+            'silhouette_score': best_model_silhouette,
+            'all_models': clustering_info['models'],
+            'model_comparison': {
+                name: {
+                    'silhouette_score': info['silhouette_score'],
+                    'linkage': info.get('linkage', None),
+                }
+                for name, info in clustering_info['models'].items()
+            }
         }
         
-        return best_model, training_info
+        return best_model_obj, training_info

@@ -92,10 +92,10 @@ async def train_model(request: TrainRequest):
             )
 
         elif request.task_type == "clustering":
-            print(f"[DEBUG] Training clustering model... X_processed shape={X_processed.shape}")
-            best_model, training_info = trainer.train_clustering(X_processed)
+            print(f"[DEBUG] Training clustering models... X_processed shape={X_processed.shape}")
+            best_model, training_info = trainer.train_clustering(X_processed, linkage='ward')
             best_name = training_info['best_model_name']
-            print(f"[DEBUG] Clustering complete: best_name={best_name}")
+            print(f"[DEBUG] Clustering complete: best_name={best_name}, n_clusters={training_info['n_clusters']}")
 
         else:
             raise HTTPException(status_code=400, detail="Invalid task type")
@@ -154,9 +154,12 @@ async def train_model(request: TrainRequest):
                 X_processed, y_pred
             )
 
+            # Updated clustering report with multi-model comparison
             report = ReportGenerator.generate_clustering_report(
                 metrics=metrics,
                 n_clusters=training_info["n_clusters"],
+                best_model_name=training_info["best_model_name"],
+                model_comparison=training_info.get("model_comparison"),
                 visualizations=visualizations
             )
 
@@ -170,7 +173,10 @@ async def train_model(request: TrainRequest):
             metadata={
                 "task_type": request.task_type,
                 "model_name": best_name,
-                "metrics": metrics
+                "metrics": metrics,
+                # For clustering, store additional info
+                "n_clusters": training_info.get("n_clusters") if request.task_type == "clustering" else None,
+                "all_models": training_info.get("all_models") if request.task_type == "clustering" else None,
             }
         )
 

@@ -362,26 +362,58 @@ class ReportGenerator:
     def generate_clustering_report(
         metrics: Dict[str, Any],
         n_clusters: int,
+        best_model_name: str = None,
+        model_comparison: Dict[str, Any] = None,
         visualizations: Dict[str, str] = None
     ) -> Dict[str, Any]:
         """
-        Generate clustering report.
+        Generate comprehensive clustering report with multi-model comparison.
         
         Args:
-            metrics: Evaluation metrics
+            metrics: Evaluation metrics (from training_info)
             n_clusters: Number of clusters
+            best_model_name: Name of the best performing model
+            model_comparison: Dict with silhouette scores for each model
             visualizations: Dict of visualizations
             
         Returns:
-            Complete report dict
+            Complete report dict with metrics and comparisons
         """
+        # Build metrics section
+        metrics_section = {
+            'silhouette_score': metrics.get('silhouette_score', None),
+        }
+        
+        # Add model-specific metrics if available
+        if 'inertia' in metrics:
+            metrics_section['inertia'] = metrics['inertia']
+        
+        if 'linkage' in metrics:
+            metrics_section['linkage'] = metrics['linkage']
+        
+        # Build model comparison section
+        comparison_section = {}
+        if model_comparison:
+            comparison_section = model_comparison
+            logger.info(f"Model Comparison:\n"
+                    f"  {comparison_section}")
+        
         report = {
             'task_type': 'clustering',
             'n_clusters': n_clusters,
-            'metrics': {
-                'silhouette_score': metrics['silhouette_score'],
-            },
+            'best_model': best_model_name,
+            'metrics': metrics_section,
+            'model_comparison': comparison_section,
             'visualizations': visualizations or {},
+            'summary': {
+                'total_models': len(comparison_section) if comparison_section else 1,
+                'best_performer': best_model_name,
+            }
         }
+        
+        logger.info(f"Clustering report generated:\n"
+                f"  Best Model: {best_model_name}\n"
+                f"  Clusters: {n_clusters}\n"
+                f"  Silhouette Score: {metrics_section.get('silhouette_score', 'N/A'):.4f}")
         
         return report
