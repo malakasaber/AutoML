@@ -70,6 +70,7 @@ body {
   padding: 24px;
   box-shadow: var(--shadow);
   transition: var(--transition);
+  min-width: 0;
 }
 
 .card:hover {
@@ -363,18 +364,22 @@ body {
 
 /* Tables */
 .table-wrapper {
+  width: 100%;
   max-width: 100%;
   max-height: 420px;
-  overflow: auto;
+  overflow: auto;     /* internal scroll only */
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--border-gray);
+  display: block;
+  position: relative;
+  min-width: 0;       /* allow shrink inside grid/flex containers */
 }
 
 table {
-  width: max-content;
-  min-width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  width: max-content;
+  min-width: 100%;    /* fill wrapper when there are fewer columns */
 }
 
 th {
@@ -384,11 +389,18 @@ th {
   font-weight: 600;
   color: var(--dark-gray);
   border-bottom: 2px solid var(--border-gray);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-width: 120px;
+  white-space: nowrap;
 }
 
 td {
   padding: 12px;
   border-bottom: 1px solid var(--border-gray);
+  min-width: 120px;
+  white-space: nowrap;
 }
 
 tr:hover {
