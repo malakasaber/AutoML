@@ -10,15 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class ModelIO:
-    """Handle model serialization and deserialization."""
     
     def __init__(self, model_dir: Path):
-        """
-        Initialize ModelIO.
-        
-        Args:
-            model_dir: Directory to store models
-        """
         self.model_dir = Path(model_dir)
         self.model_dir.mkdir(exist_ok=True)
     
@@ -61,15 +54,6 @@ class ModelIO:
             raise
     
     def load_model(self, model_id: str) -> Dict[str, Any]:
-        """
-        Load saved model with preprocessing pipeline.
-        
-        Args:
-            model_id: Model identifier
-            
-        Returns:
-            Dict with model, preprocessor, and metadata
-        """
         # Try both formats
         joblib_path = self.model_dir / f"model_{model_id}.joblib"
         pickle_path = self.model_dir / f"model_{model_id}.pkl"
@@ -97,26 +81,11 @@ class ModelIO:
             raise
     
     def list_models(self) -> list:
-        """
-        List all saved models.
-        
-        Returns:
-            List of model file paths
-        """
         models = list(self.model_dir.glob("model_*.joblib")) + \
                  list(self.model_dir.glob("model_*.pkl"))
         return [str(m) for m in models]
     
     def delete_model(self, model_id: str) -> bool:
-        """
-        Delete a saved model.
-        
-        Args:
-            model_id: Model identifier
-            
-        Returns:
-            True if successful, False otherwise
-        """
         joblib_path = self.model_dir / f"model_{model_id}.joblib"
         pickle_path = self.model_dir / f"model_{model_id}.pkl"
         
@@ -136,27 +105,11 @@ class ModelIO:
 
 
 class PipelineManager:
-    """Manage complete ML pipeline (preprocessing + model + evaluation)."""
     
     def __init__(self, model_io: ModelIO):
-        """
-        Initialize PipelineManager.
-        
-        Args:
-            model_io: ModelIO instance
-        """
         self.model_io = model_io
     
     def get_model_info(self, model_id: str) -> Dict[str, Any]:
-        """
-        Get information about a saved model.
-        
-        Args:
-            model_id: Model identifier
-            
-        Returns:
-            Dict with model information
-        """
         model_package = self.model_io.load_model(model_id)
         
         metadata = model_package.get('metadata', {})
@@ -177,16 +130,6 @@ class PipelineManager:
         model_id: str,
         X: Any
     ) -> Dict[str, Any]:
-        """
-        Make prediction using saved model.
-        
-        Args:
-            model_id: Model identifier
-            X: Feature data
-            
-        Returns:
-            Dict with predictions
-        """
         model_package = self.model_io.load_model(model_id)
         model = model_package['model']
         preprocessor = model_package['preprocessor']
@@ -215,7 +158,7 @@ class PipelineManager:
             'model_name': metadata.get('model_name'),
         }
         
-        # Add probabilities for classification
+        # Add probabilities for classification -> confidence scores
         if task_type == 'classification' and hasattr(model, 'predict_proba'):
             probabilities = model.predict_proba(X_processed)
             result['probabilities'] = probabilities.tolist()

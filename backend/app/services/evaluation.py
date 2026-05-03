@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class ModelEvaluator:
-    """Evaluate model performance and generate metrics."""
     
     @staticmethod
     def evaluate_classification(
@@ -25,17 +24,6 @@ class ModelEvaluator:
         y_pred: np.ndarray,
         y_pred_proba: np.ndarray = None
     ) -> Dict[str, Any]:
-        """
-        Evaluate classification model.
-        
-        Args:
-            y_true: True labels
-            y_pred: Predicted labels
-            y_pred_proba: Prediction probabilities (optional)
-            
-        Returns:
-            Dict with metrics
-        """
         metrics = {
             'accuracy': accuracy_score(y_true, y_pred),
             'precision': precision_score(y_true, y_pred, average='weighted', zero_division=0),
@@ -54,16 +42,6 @@ class ModelEvaluator:
         y_true: np.ndarray,
         y_pred: np.ndarray
     ) -> Dict[str, Any]:
-        """
-        Evaluate regression model.
-        
-        Args:
-            y_true: True values
-            y_pred: Predicted values
-            
-        Returns:
-            Dict with metrics
-        """
         mae = mean_absolute_error(y_true, y_pred)
         mse = mean_squared_error(y_true, y_pred)
         rmse = np.sqrt(mse)
@@ -85,16 +63,6 @@ class ModelEvaluator:
         X: np.ndarray,
         labels: np.ndarray
     ) -> Dict[str, Any]:
-        """
-        Evaluate clustering model.
-        
-        Args:
-            X: Feature matrix
-            labels: Cluster labels
-            
-        Returns:
-            Dict with metrics
-        """
         # Calculate silhouette score
         silhouette_avg = silhouette_score(X, labels)
         
@@ -117,17 +85,8 @@ class ModelEvaluator:
         y_pred: np.ndarray,
         class_names: list = None
     ) -> str:
-        """
-        Generate confusion matrix plot.
-        
-        Args:
-            y_true: True labels
-            y_pred: Predicted labels
-            class_names: Names of classes
-            
-        Returns:
-            Base64 encoded plot image
-        """
+        # returns base64 encoded plot image
+
         cm = confusion_matrix(y_true, y_pred)
         
         # Generate class names if not provided
@@ -156,17 +115,6 @@ class ModelEvaluator:
         feature_names: list,
         top_n: int = 10
     ) -> str:
-        """
-        Generate feature importance plot.
-        
-        Args:
-            model: Trained model with feature_importances_
-            feature_names: Names of features
-            top_n: Number of top features to show
-            
-        Returns:
-            Base64 encoded plot image
-        """
         if not hasattr(model, 'feature_importances_'):
             logger.warning("Model does not have feature_importances_ attribute")
             return None
@@ -195,16 +143,7 @@ class ModelEvaluator:
         y_true: np.ndarray,
         y_pred: np.ndarray
     ) -> str:
-        """
-        Generate actual vs predicted plot for regression.
-        
-        Args:
-            y_true: True values
-            y_pred: Predicted values
-            
-        Returns:
-            Base64 encoded plot image
-        """
+        # returns base64 encoded plot image of actual vs predicted values
         fig, ax = plt.subplots(figsize=(8, 6))
         
         # Scatter plot
@@ -234,16 +173,7 @@ class ModelEvaluator:
         X: np.ndarray,
         labels: np.ndarray
     ) -> str:
-        """
-        Generate silhouette plot for clustering.
-        
-        Args:
-            X: Feature matrix
-            labels: Cluster labels
-            
-        Returns:
-            Base64 encoded plot image
-        """
+        #returns base64 encoded silhouette plot image
         silhouette_avg = silhouette_score(X, labels)
         sample_silhouette_values = silhouette_samples(X, labels)
         
@@ -280,7 +210,6 @@ class ModelEvaluator:
 
 
 class ReportGenerator:
-    """Generate comprehensive model reports."""
     
     @staticmethod
     def generate_classification_report(
@@ -290,19 +219,6 @@ class ReportGenerator:
         all_cv_scores: Dict[str, float],
         visualizations: Dict[str, str] = None
     ) -> Dict[str, Any]:
-        """
-        Generate classification report.
-        
-        Args:
-            model_name: Name of best model
-            metrics: Evaluation metrics
-            cv_score: Best CV score
-            all_cv_scores: All models' CV scores
-            visualizations: Dict of visualizations
-            
-        Returns:
-            Complete report dict
-        """
         report = {
             'task_type': 'classification',
             'best_model': model_name,
@@ -329,19 +245,6 @@ class ReportGenerator:
         all_cv_scores: Dict[str, float],
         visualizations: Dict[str, str] = None
     ) -> Dict[str, Any]:
-        """
-        Generate regression report.
-        
-        Args:
-            model_name: Name of best model
-            metrics: Evaluation metrics
-            cv_score: Best CV score
-            all_cv_scores: All models' CV scores
-            visualizations: Dict of visualizations
-            
-        Returns:
-            Complete report dict
-        """
         report = {
             'task_type': 'regression',
             'best_model': model_name,
@@ -366,19 +269,6 @@ class ReportGenerator:
         model_comparison: Dict[str, Any] = None,
         visualizations: Dict[str, str] = None
     ) -> Dict[str, Any]:
-        """
-        Generate comprehensive clustering report with multi-model comparison.
-        
-        Args:
-            metrics: Evaluation metrics (from training_info)
-            n_clusters: Number of clusters
-            best_model_name: Name of the best performing model
-            model_comparison: Dict with silhouette scores for each model
-            visualizations: Dict of visualizations
-            
-        Returns:
-            Complete report dict with metrics and comparisons
-        """
         # Build metrics section
         metrics_section = {
             'silhouette_score': metrics.get('silhouette_score', None),

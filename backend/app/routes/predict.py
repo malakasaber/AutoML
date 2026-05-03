@@ -52,7 +52,7 @@ async def predict(request: PredictRequest):
             predictions = target_encoder.inverse_transform(predictions)
 
         # =========================
-        # 5. Probabilities (classification only)
+        # 5. Probabilities (classification only) -> confidence scores
         # =========================
         probabilities = None
         if task_type == "classification" and hasattr(model, "predict_proba"):

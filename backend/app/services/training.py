@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 class ModelTrainer:
-    """Train and select best model for ML tasks."""
     
-    def __init__(self, test_size: float = 0.2, random_state: int = 42):
+    def __init__(self, test_size: float = 0.2, random_state: int = 42, large_data_threshold: int = 10000):
         self.test_size = test_size
         self.random_state = random_state
+        self.large_data_threshold = large_data_threshold
         self.best_model = None
         self.best_model_name = None
         self.X_train = None
@@ -32,17 +32,6 @@ class ModelTrainer:
         y: pd.Series,
         stratify: bool = False
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
-        """
-        Split data into training and testing sets.
-        
-        Args:
-            X: Feature dataframe
-            y: Target series
-            stratify: Whether to stratify the split by y.
-            
-        Returns:
-            Tuple of (X_train, X_test, y_train, y_test)
-        """
         # Ensure y is a Series
         if isinstance(y, np.ndarray):
             y = pd.Series(y)
@@ -71,22 +60,24 @@ class ModelTrainer:
         X_train: pd.DataFrame,
         y_train: pd.Series
     ) -> Dict[str, Any]:
-        """
-        Train multiple classification algorithms.
-        
-        Args:
-            X_train: Training features
-            y_train: Training target
-            
-        Returns:
-            Dict with trained models and cross-validation scores
-        """
-        models = {
+        all_models = {
             'Logistic Regression': LogisticRegression(max_iter=1000, random_state=self.random_state),
-            'Random Forest': RandomForestClassifier(n_estimators=100, random_state=self.random_state, n_jobs=-1),
+            'Random Forest': RandomForestClassifier(n_estimators=100, random_state=self.random_state, n_jobs=-1), 
+            # jobs=-1 is for fast algo to use all available cpu cores
             'Gradient Boosting': GradientBoostingClassifier(n_estimators=100, random_state=self.random_state),
             'SVM': SVC(kernel='rbf', random_state=self.random_state),
         }
+
+        if len(X_train) > self.large_data_threshold:
+            models = {
+                'Logistic Regression': all_models['Logistic Regression'],
+                'Random Forest': all_models['Random Forest'],
+            }
+            logger.info(
+                f"Large dataset detected ({len(X_train)} rows); training only Logistic Regression and Random Forest for classification."
+            )
+        else:
+            models = all_models
         
         trained_models = {}
         cv_scores = {}
@@ -112,22 +103,23 @@ class ModelTrainer:
         X_train: pd.DataFrame,
         y_train: pd.Series
     ) -> Dict[str, Any]:
-        """
-        Train multiple regression algorithms.
-        
-        Args:
-            X_train: Training features
-            y_train: Training target
-            
-        Returns:
-            Dict with trained models and cross-validation scores
-        """
-        models = {
+        all_models = {
             'Linear Regression': LinearRegression(),
             'Random Forest': RandomForestRegressor(n_estimators=100, random_state=self.random_state, n_jobs=-1),
             'Gradient Boosting': GradientBoostingRegressor(n_estimators=100, random_state=self.random_state),
             'SVR': SVR(kernel='rbf'),
         }
+
+        if len(X_train) > self.large_data_threshold:
+            models = {
+                'Linear Regression': all_models['Linear Regression'],
+                'Random Forest': all_models['Random Forest'],
+            }
+            logger.info(
+                f"Large dataset detected ({len(X_train)} rows); training only Linear Regression and Random Forest for regression."
+            )
+        else:
+            models = all_models
         
         trained_models = {}
         cv_scores = {}
@@ -154,18 +146,7 @@ class ModelTrainer:
         n_clusters: int = None,
         linkage: str = 'ward'
     ) -> Dict[str, Any]:
-        """
-        Train multiple clustering models (KMeans and Agglomerative).
-        
-        Args:
-            X: Feature dataframe
-            n_clusters: Number of clusters (auto-detect if None)
-            linkage: Linkage criterion for Agglomerative ('ward', 'complete', 'average', 'single')
-            
-        Returns:
-            Dict with trained models and metadata
-        """
-        # Auto-detect optimal number of clusters using elbow method
+        # Auto-detect optimal number of clusters using elbow method (silhoutte)
         if n_clusters is None:
             n_clusters = self._optimal_clusters(X)
         
@@ -221,16 +202,6 @@ class ModelTrainer:
         }
     
     def _optimal_clusters(self, X: pd.DataFrame, max_k: int = 10) -> int:
-        """
-        Find optimal number of clusters using elbow method.
-        
-        Args:
-            X: Feature dataframe
-            max_k: Maximum number of clusters to test
-            
-        Returns:
-            Optimal number of clusters
-        """
         inertias = []
         silhouette_scores = []
         
@@ -255,16 +226,7 @@ class ModelTrainer:
         trained_models: Dict,
         cv_scores: Dict
     ) -> Tuple[Any, str, float]:
-        """
-        Select best model based on cross-validation scores.
-        
-        Args:
-            trained_models: Dict of trained models
-            cv_scores: Dict of CV scores
-            
-        Returns:
-            Tuple of (best_model, best_model_name, best_score)
-        """
+        #best model is slected based on cross validation score
         if not cv_scores or len(cv_scores) == 0:
             raise ValueError("No trained models available - cv_scores is empty")
         
@@ -287,16 +249,7 @@ class ModelTrainer:
         X: pd.DataFrame,
         y: pd.Series
     ) -> Tuple[Any, str, Dict[str, Any]]:
-        """
-        Complete classification training pipeline.
         
-        Args:
-            X: Features
-            y: Target
-            
-        Returns:
-            Tuple of (best_model, best_model_name, training_info)
-        """
         # Validate inputs
         if X is None or len(X) == 0:
             raise ValueError("X is empty or None")
@@ -333,16 +286,7 @@ class ModelTrainer:
         X: pd.DataFrame,
         y: pd.Series
     ) -> Tuple[Any, str, Dict[str, Any]]:
-        """
-        Complete regression training pipeline.
         
-        Args:
-            X: Features
-            y: Target
-            
-        Returns:
-            Tuple of (best_model, best_model_name, training_info)
-        """
         # Validate inputs
         if X is None or len(X) == 0:
             raise ValueError("X is empty or None")
@@ -380,17 +324,7 @@ class ModelTrainer:
         n_clusters: int = None,
         linkage: str = 'ward'
     ) -> Tuple[Any, Dict[str, Any]]:
-        """
-        Complete clustering training pipeline.
         
-        Args:
-            X: Features
-            n_clusters: Number of clusters (auto-detect if None)
-            linkage: Linkage criterion for Agglomerative ('ward', 'complete', 'average', 'single')
-            
-        Returns:
-            Tuple of (best_model, training_info)
-        """
         # Validate inputs
         if X is None or len(X) == 0:
             raise ValueError("X is empty or None")

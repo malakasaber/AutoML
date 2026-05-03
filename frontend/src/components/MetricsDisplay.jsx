@@ -1,10 +1,14 @@
 import React from 'react';
-import { formatPercent, formatDecimal, getTaskTypeName } from '../utils/formatters';
+import { formatPercent, formatDecimal, getTaskTypeName, parseConfusionMatrix } from '../utils/formatters';
 
 export default function MetricsDisplay({ metrics, visualizations = {}, taskType }) {
   if (!metrics) {
     return null;
   }
+
+  const bestAlgorithm = metrics?.best_algorithm || metrics?.bestAlgorithm || 'Best Model';
+  const algorithms = metrics?.algorithms || [];
+  const confusionMatrix = parseConfusionMatrix(metrics?.confusion_matrix);
 
   const renderMetric = (label, value) => {
     if (value === null || value === undefined) return null;
@@ -51,7 +55,7 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
           {renderMetric('F1 Score', f1_score)}
         </div>
 
-        {confusion_matrix && (
+        {confusionMatrix.length > 0 && (
           <div style={{ marginTop: '24px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
               Confusion Matrix
@@ -68,13 +72,13 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
                 <tbody>
                   <tr>
                     <td><strong>Actual Negative</strong></td>
-                    <td>{confusion_matrix[0]?.[0] || 'N/A'}</td>
-                    <td>{confusion_matrix[0]?.[1] || 'N/A'}</td>
+                    <td>{confusionMatrix[0]?.[0] ?? 'N/A'}</td>
+                    <td>{confusionMatrix[0]?.[1] ?? 'N/A'}</td>
                   </tr>
                   <tr>
                     <td><strong>Actual Positive</strong></td>
-                    <td>{confusion_matrix[1]?.[0] || 'N/A'}</td>
-                    <td>{confusion_matrix[1]?.[1] || 'N/A'}</td>
+                    <td>{confusionMatrix[1]?.[0] ?? 'N/A'}</td>
+                    <td>{confusionMatrix[1]?.[1] ?? 'N/A'}</td>
                   </tr>
                 </tbody>
               </table>
@@ -122,7 +126,7 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
             <img
               src={`data:image/png;base64,${visualizations.confusion_matrix}`}
               alt="Confusion Matrix"
-              style={{ width: '100%', height: 'auto', display: 'block' }}
+              style={{ width: '50%', height: 'auto', display: 'block' ,margin: '0 auto'}}
             />
           </div>
         </div>
@@ -139,7 +143,7 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
             <img
               src={`data:image/png;base64,${visualizations.actual_vs_pred}`}
               alt="Actual vs Predicted"
-              style={{ width: '100%', height: 'auto', display: 'block' }}
+              style={{ width: '50%', height: 'auto', display: 'block' ,margin: '0 auto'}}
             />
           </div>
         </div>
@@ -156,7 +160,7 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
             <img
               src={`data:image/png;base64,${visualizations.silhouette}`}
               alt="Silhouette Plot"
-              style={{ width: '100%', height: 'auto', display: 'block' }}
+              style={{ width: '50%', height: 'auto', display: 'block' ,margin: '0 auto'}}
             />
           </div>
         </div>
@@ -172,7 +176,7 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
 
       <div style={{ marginBottom: '16px', padding: '12px 16px', backgroundColor: 'rgba(37, 99, 235, 0.1)', borderRadius: '6px' }}>
         <p style={{ margin: 0, fontSize: '14px' }}>
-          <strong>Task Type:</strong> {getTaskTypeName(taskType)} | <strong>Model:</strong> {metrics.best_algorithm || 'Best Model'}
+          <strong>Task Type:</strong> {getTaskTypeName(taskType)} | <strong>Model:</strong> {bestAlgorithm}
         </p>
       </div>
 
@@ -180,7 +184,7 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
       {taskType === 'regression' && renderRegressionMetrics()}
       {taskType === 'clustering' && renderClusteringMetrics()}
 
-      {metrics.algorithms && metrics.algorithms.length > 0 && (
+      {algorithms.length > 0 && (
         <div style={{ marginTop: '24px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
             Trained Algorithms
@@ -195,7 +199,7 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
                 </tr>
               </thead>
               <tbody>
-                {metrics.algorithms.map((algo, idx) => (
+                {algorithms.map((algo, idx) => (
                   <tr key={idx}>
                     <td>{algo.name || algo}</td>
                     <td>{formatDecimal(algo.score || 0)}</td>
@@ -203,11 +207,11 @@ export default function MetricsDisplay({ metrics, visualizations = {}, taskType 
                       <span
                         className="badge"
                         style={{
-                          backgroundColor: algo.name === metrics.best_algorithm ? 'rgba(22, 163, 74, 0.1)' : 'rgba(107, 114, 128, 0.1)',
-                          color: algo.name === metrics.best_algorithm ? '#15803d' : '#6b7280',
+                          backgroundColor: algo.name === bestAlgorithm ? 'rgba(22, 163, 74, 0.1)' : 'rgba(107, 114, 128, 0.1)',
+                          color: algo.name === bestAlgorithm ? '#15803d' : '#6b7280',
                         }}
                       >
-                        {algo.name === metrics.best_algorithm ? '✓ Best' : 'Trained'}
+                        {algo.name === bestAlgorithm ? '✓ Best' : 'Trained'}
                       </span>
                     </td>
                   </tr>

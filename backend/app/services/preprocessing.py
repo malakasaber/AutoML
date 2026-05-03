@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class DataPreprocessor:
-    """Preprocess data for ML models."""
     
     def __init__(self):
         self.scaler = None
@@ -44,15 +43,6 @@ class DataPreprocessor:
             self.label_encoders[col] = le
     
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Transform data using fitted preprocessor.
-        
-        Args:
-            X: Feature dataframe
-            
-        Returns:
-            Transformed dataframe
-        """
         X_transformed = X.copy()
         
         # Handle missing values
@@ -67,15 +57,6 @@ class DataPreprocessor:
         return X_transformed
     
     def _handle_missing_values(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Handle missing values using mean imputation for numerical features.
-        
-        Args:
-            X: Feature dataframe
-            
-        Returns:
-            Dataframe with missing values handled
-        """
         X_processed = X.copy()
         
         # For numerical columns, use mean imputation
@@ -98,15 +79,6 @@ class DataPreprocessor:
         return X_processed
     
     def _encode_categorical(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Encode categorical variables using label encoding.
-        
-        Args:
-            X: Feature dataframe
-            
-        Returns:
-            Dataframe with encoded categorical variables
-        """
         X_encoded = X.copy()
         
         for col in self.categorical_columns:
@@ -124,15 +96,6 @@ class DataPreprocessor:
         return X_encoded
     
     def _scale_features(self, X: pd.DataFrame) -> pd.DataFrame:
-        """
-        Scale numerical features using standardization.
-        
-        Args:
-            X: Feature dataframe
-            
-        Returns:
-            Dataframe with scaled features
-        """
         X_scaled = X.copy()
         
         if self.scaler and self.numerical_columns:
@@ -144,16 +107,6 @@ class DataPreprocessor:
         return X_scaled
     
     def fit_transform(self, X: pd.DataFrame, y: pd.Series = None) -> pd.DataFrame:
-        """
-        Fit and transform data in one step.
-        
-        Args:
-            X: Feature dataframe
-            y: Target series (optional)
-            
-        Returns:
-            Transformed dataframe
-        """
         if X is None or len(X) == 0:
             raise ValueError("X is empty or None")
         
@@ -167,20 +120,9 @@ class DataPreprocessor:
 
 
 class ImbalanceHandler:
-    """Handle class imbalance using resampling techniques."""
     
     @staticmethod
     def check_imbalance(y: pd.Series, threshold: float = 0.4) -> Tuple[bool, Dict[str, Any]]:
-        """
-        Check if dataset has class imbalance.
-        
-        Args:
-            y: Target series
-            threshold: Imbalance threshold (minority / majority ratio)
-            
-        Returns:
-            Tuple of (is_imbalanced, info_dict)
-        """
         # Ensure y is a Series and not None
         if y is None:
             return False, {'is_imbalanced': False, 'message': 'Empty target'}
@@ -224,17 +166,7 @@ class ImbalanceHandler:
         y: pd.Series,
         method: str = 'smote'
     ) -> Tuple[pd.DataFrame, pd.Series]:
-        """
-        Handle class imbalance using SMOTE or undersampling.
-        
-        Args:
-            X: Feature dataframe
-            y: Target series
-            method: 'smote' or 'undersample'
-            
-        Returns:
-            Tuple of (X_resampled, y_resampled)
-        """
+        # class imbalance handled with SMOTE and undersampling
         # Ensure y is a Series
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
@@ -281,56 +213,23 @@ class ImbalanceHandler:
 
 
 class TargetEncoder:
-    """Encode target variable for classification tasks."""
+    #for classification
     
     def __init__(self):
         self.label_encoder = LabelEncoder()
         self.classes_ = None
     
     def fit(self, y: pd.Series) -> None:
-        """
-        Fit encoder on target variable.
-        
-        Args:
-            y: Target series
-        """
         self.label_encoder.fit(y)
         self.classes_ = self.label_encoder.classes_
         logger.info(f"Fitted target encoder. Classes: {self.classes_}")
     
     def transform(self, y: pd.Series) -> np.ndarray:
-        """
-        Transform target variable.
-        
-        Args:
-            y: Target series
-            
-        Returns:
-            Encoded target array
-        """
         return self.label_encoder.transform(y)
     
     def inverse_transform(self, y_encoded: np.ndarray) -> np.ndarray:
-        """
-        Transform encoded labels back to original.
-        
-        Args:
-            y_encoded: Encoded target array
-            
-        Returns:
-            Original labels
-        """
         return self.label_encoder.inverse_transform(y_encoded)
     
     def fit_transform(self, y: pd.Series) -> np.ndarray:
-        """
-        Fit and transform in one step.
-        
-        Args:
-            y: Target series
-            
-        Returns:
-            Encoded target array
-        """
         self.fit(y)
         return self.transform(y)

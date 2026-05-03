@@ -39,24 +39,33 @@ export default function TrainButton({
         const reportMetrics = report.metrics || {};
         const bestModel = report.best_model || trainingResponse.model_name || report.model_name || '';
 
-        const algorithmsFromCvScores = report.all_models_cv_scores && Object.entries(report.all_models_cv_scores).map(([name, score]) => ({
-          name,
-          score,
-        }));
+        const algorithmsFromCvScores = report.all_models_cv_scores
+          ? Object.entries(report.all_models_cv_scores).map(([name, score]) => ({
+              name,
+              score,
+            }))
+          : [];
 
-        const algorithmsFromComparison = report.model_comparison && Object.entries(report.model_comparison).map(([name, info]) => ({
-          name,
-          score: info.silhouette_score,
-          linkage: info.linkage,
-        }));
+        const algorithmsFromComparison = report.model_comparison
+          ? Object.entries(report.model_comparison).map(([name, info]) => ({
+              name,
+              score: info.silhouette_score,
+              linkage: info.linkage,
+            }))
+          : [];
 
-        const algorithms = algorithmsFromCvScores || algorithmsFromComparison || [];
+        const algorithms = algorithmsFromCvScores.length > 0
+          ? algorithmsFromCvScores
+          : algorithmsFromComparison;
 
         const metricsData = {
           model_id: trainingResponse.model_id,
           taskType,
           metrics: {
             ...reportMetrics,
+            confusion_matrix: report.confusion_matrix,
+            classification_report: report.classification_report,
+            cross_validation_score: report.cross_validation_score,
             best_algorithm: bestModel,
             algorithms,
           },
